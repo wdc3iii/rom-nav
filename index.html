@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Learning Safe Humanoid Navigation from Reduced Order Models</title>
+<meta name="description" content="A two-stage reinforcement learning pipeline that trains humanoid navigation on a reduced order model, then kickstarts a full-order policy. Mapless multi-floor navigation on a Unitree G1 over 10 m of vertical displacement and 100 m paths.">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Learning Safe Humanoid Navigation from Reduced Order Models">
+<meta property="og:description" content="Mapless multi-floor humanoid navigation, trained by kickstarting from a reduced order model and made safe with a Poisson safety filter.">
+<meta property="og:image" content="media/figures/og-card.jpg">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV" crossorigin="anonymous">
+<link rel="stylesheet" href="css/main.css">
+<link rel="icon" href="media/figures/og-card.jpg">
+</head>
+<body>
+
+<!-- ===================================================== masthead -->
+<header class="masthead wrap">
+  <h1>Learning Safe Humanoid Navigation from Reduced Order Models</h1>
+
+  <!-- TODO(authors): replace the placeholder list below. Superscripts index .affil. -->
+  <p class="authors" id="author-list">
+    Author One<sup>1</sup>, Author Two<sup>1</sup>, Author Three<sup>2</sup>, Author Four<sup>1</sup>
+  </p>
+  <p class="affil">
+    <sup>1</sup>Affiliation One &nbsp;&nbsp; <sup>2</sup>Affiliation Two
+  </p>
+
+  <p class="venue">Under review &middot; ICRA 2027</p>
+
+  <nav class="links" aria-label="Paper and media links">
+    <a href="paper/rom-nav.pdf">Paper</a>
+    <!-- TODO(arxiv): swap href when the identifier lands, and drop aria-disabled. -->
+    <a href="#" id="arxiv-link" aria-disabled="true" title="Link added at posting">arXiv</a>
+    <a href="#video">Video</a>
+  </nav>
+</header>
+
+<figure class="hero-fig wrap">
+  <video src="media/video/hero.mp4" poster="media/poster/hero.webp"
+         autoplay muted loop playsinline preload="metadata"
+         aria-label="Four hardware deployments of the RoM-Nav policy running simultaneously"></video>
+</figure>
+
+<!-- ===================================================== nav -->
+<nav class="nav" aria-label="Section navigation">
+  <ul>
+    <li><a href="#abstract">Abstract</a></li>
+    <li><a href="#method">Method</a></li>
+    <li><a href="#results">Results</a></li>
+    <li><a href="#safety">Safety</a></li>
+    <li><a href="#hardware">Hardware</a></li>
+    <li><a href="#video">Video</a></li>
+    <li><a href="#citation">Citation</a></li>
+  </ul>
+</nav>
+
+<main>
+
+<!-- ===================================================== I. abstract -->
+<section id="abstract">
+  <div class="sec-head wrap"><span class="sec-num">I</span><h2>Abstract</h2></div>
+  <div class="wrap prose">
+    <p class="lead">Research in humanoid robotics has achieved rapid progress in locomotion, and recent results have pushed the boundary on autonomous navigation. We demonstrate that a standard single-stage RL navigation pipeline struggles to scale to multi-level and multi-story terrain, limited by the difficulty of complex humanoid terrain interactions such as stairs.</p>
+    <p>To overcome this challenge, we decompose the navigation problem into two pieces. First, we train a policy operating on the reduced order dynamics but with full 3D LiDAR observations to navigate complex, multi-story terrain. We then utilize this navigation knowledge to kickstart a policy operating on the full-order humanoid dynamics, with a frozen locomotion policy in the loop.</p>
+    <p>Additionally, we demonstrate that applying a Poisson safety filter to the navigation policy output recovers safety in the presence of out-of-distribution obstacles, without dropping navigation success rate. We demonstrate the resulting RoM-Nav policy on a Unitree G1, accomplishing mapless multi-floor navigation covering trials with over 10&nbsp;m of vertical displacement and over 100&nbsp;m of path length.</p>
+  </div>
+</section>
+
+<!-- ===================================================== II. method -->
+<section id="method">
+  <div class="sec-head wrap"><span class="sec-num">II</span><h2>Method</h2></div>
+
+  <div class="wrap prose">
+    <p>The navigation policy is trained for deployment on a Unitree G1 equipped with a Mid-360 LiDAR and a downward-facing ZED Mini depth camera. It runs at 5&nbsp;Hz and emits planar velocity commands to a <em>frozen</em> locomotion policy running at 50&nbsp;Hz, with limits of 1&nbsp;m/s forward, 0.25&nbsp;m/s lateral and 1&nbsp;rad/s angular.</p>
+  </div>
+
+  <figure class="wrap plain">
+    <img src="media/figures/architecture.webp" width="1600" alt="RoM-Nav architecture: LiDAR and depth encoders feed self- and cross-attention, then a GRU and an MLP head; below, a RoM policy kickstarts the humanoid policy." loading="lazy">
+    <figcaption><b>Fig. 2.</b> RoM-Nav architecture. LiDAR and Depth inputs are processed via a pretrained CNN encoder. LiDAR passes through self- then cross-attention. The resulting embeddings are processed by a GRU unit and mapped to actions via an MLP head. A RoM policy is trained first, which is then used to kickstart the RoM-Nav policy by balancing KL divergence with a PPO objective on the humanoid with frozen locomotion controller.</figcaption>
+  </figure>
+
+  <h3 class="sub"><span class="lt">A.</span>Kickstarting from a reduced order model</h3>
+  <div class="wrap prose">
+    <p>The final navigation policy is kickstarted from one trained on a single integrator with heading, whose environment is an occupancy grid derived from the same 3D terrain. When a command drives into an occupied cell, the penetrating component is projected out, sliding along the boundary. Trivializing the environment interaction this way lets the reduced-order policy reach strong navigation performance quickly.</p>
+    <p>That policy then supervises training on the humanoid through a weighted combination of the PPO objective and a KL divergence against the RoM policy:</p>
+    <div class="eq">$$\mathcal{L} = \mathcal{L}_{\mathrm{PPO}} + \lambda\,\mathcal{L}_{\mathrm{KL}}(\pi, \pi^{R}).$$</div>
+    <p>The weight <span class="katex-inline">\(\lambda\)</span> is 1 for the first 100 iterations, then decays to 0.05 by iteration 1100, where it holds until training finishes at 2000 iterations. The RoM policy trains in 12 hours on one H100; the RoM-Nav policy takes 32 hours. Combined training is under 45 hours on a single GPU.</p>
+  </div>
+
+  <div class="wrap">
+    <div class="duo">
+      <figure style="margin:0">
+        <video src="media/video/stage1-rom.mp4" poster="media/poster/stage1-rom.webp"
+               autoplay muted loop playsinline preload="none"
+               aria-label="Reduced order model policy: cylinders navigating a procedural tile"></video>
+        <figcaption><b>Stage 1.</b> The reduced order model — a single integrator with heading, colliding against the tile's occupancy grid.</figcaption>
+      </figure>
+      <figure style="margin:0">
+        <video src="media/video/stage2-kickstart.mp4" poster="media/poster/stage2-kickstart.webp"
+               autoplay muted loop playsinline preload="none"
+               aria-label="Kickstarted humanoid policy on the same tile and camera"></video>
+        <figcaption><b>Stage 2.</b> The kickstarted humanoid, on the <em>same tile under the same camera</em>, driving a frozen locomotion controller.</figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <h3 class="sub"><span class="lt">B.</span>Pretrained vision encoders</h3>
+  <div class="wrap prose">
+    <p>The LiDAR range image and depth image are high-dimensional inputs requiring significant visual processing. Rather than learn these features during RL, we pretrain a CNN encoder for each as a denoising VAE, with heads for depth, XYZ and valid-mask reconstruction plus ground/obstacle/stair/ramp segmentation, so that critical features are retained in the latent. Inputs are noised, 0–80&nbsp;% pixel dropout is applied, and the robot's head occlusion mask is varied. The encoders are trained for 10 epochs on 1M uniform and 1M stair- and ramp-oversampled images, then frozen.</p>
+  </div>
+
+  <h3 class="sub"><span class="lt">C.</span>Environments, spawns and goals</h3>
+  <div class="wrap prose">
+    <p>Where existing work uses single-level layouts, deploying in multi-level real-world environments requires a different approach. We procedurally generate outdoor tiles, single-room tiles and multi-story building tiles. A tile is <em>multi-story</em> if there exist <span class="katex-inline">\(x, y\)</span> coordinates containing multiple disjoint <span class="katex-inline">\(z\)</span> locations that are coherent goals — the same planar position on different floors. Because tiles are generated programmatically, ground-truth traversability is recorded during generation and rasterized into a 0.2&nbsp;m occupancy grid, maintained per floor.</p>
+    <p>Spawns and goals are not uniform. With probability 0.3 the spawn is placed on or near the mouth of a stair or ramp, drawn from a phase-indexed gait library of the locomotion policy traversing that geometry, so the robot begins mid-stride rather than standing. Goals are capped at 30&nbsp;m of <em>geodesic</em> distance — computed by a CUDA wavefront kernel — and biased to cross height levels: three-story tiles sample cross-level goals 100&nbsp;% of the time, other tiles 50&nbsp;%.</p>
+  </div>
+
+  <figure class="wrap plain">
+    <img src="media/figures/envs.webp" width="1600" alt="Procedurally generated tiles and their occupancy grids: a multi-story building and a multi-level outdoor environment." loading="lazy">
+    <figcaption><b>Fig. 3.</b> Environment tiles. (a) multi-story building and (b) its occupancy grid. (c) multi-level outdoor environment and (d) its occupancy grid.</figcaption>
+  </figure>
+</section>
+
+<!-- ===================================================== III. results -->
+<section id="results">
+  <div class="sec-head wrap"><span class="sec-num">III</span><h2>Results in Simulation</h2></div>
+
+  <h3 class="sub"><span class="lt">A.</span>RoM kickstarting</h3>
+  <div class="wrap prose">
+    <p>We compare four arms. <strong>Single-Stage</strong> is trained directly on the humanoid via PPO for 4000 iterations. <strong>RoM&nbsp;(cyl)</strong> is the reduced-order policy evaluated on its own dynamics, an upper bound for the method. <strong>RoM&nbsp;(hum)</strong> is that same policy deployed zero-shot onto the humanoid. <strong>RoM-Nav</strong> is the proposed method. Every policy is spawned from the same 1024 initial conditions on terrain generated with a different seed from training.</p>
+  </div>
+
+  <div class="tbl wrap">
+    <table>
+      <caption><b>Table II.</b> Navigation performance across training methods. SR@45 / SR@120 are success within 45&nbsp;s (the training budget) and 120&nbsp;s; T2G is mean time to reach the goal over successful episodes; SPL is success weighted by path length against the geodesic route. <b>Bold</b> marks the best humanoid arm per column. <sup>*</sup>RoM (cyl) is evaluated on RoM dynamics.</caption>
+      <thead>
+        <tr><th scope="col">Arm</th><th scope="col">SR@45 (%)</th><th scope="col">SR@120 (%)</th><th scope="col">T2G (s)</th><th scope="col">SPL</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>RoM (cyl)<sup>*</sup></td><td>84.1</td><td>93.6</td><td>25.6</td><td>0.776</td></tr>
+        <tr class="gap"><td>Single-Stage</td><td>62.2</td><td>81.7</td><td>32.1</td><td>0.690</td></tr>
+        <tr><td>RoM (hum)</td><td>74.2</td><td>88.1</td><td>29.8</td><td>0.713</td></tr>
+        <tr><td>RoM-Nav</td><td class="best">82.3</td><td class="best">92.8</td><td class="best">28.8</td><td class="best">0.769</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="wrap prose">
+    <p>Single-Stage underperforms throughout, while RoM-Nav lands within 1–2&nbsp;% of the reduced-order upper bound. The RoM transfers onto the humanoid reasonably well without kickstarting, but kickstarting recovers a further 8&nbsp;% success at 45&nbsp;s and 5&nbsp;% at 120&nbsp;s.</p>
+  </div>
+
+  <figure class="wrap">
+    <video src="media/video/triptych.mp4" poster="media/poster/triptych.webp"
+           controls muted loop playsinline preload="none"
+           aria-label="Three policy arms attempting the same three-storey tile side by side"></video>
+    <figcaption><b>Three arms, one three-storey tile.</b> Left to right: Single-Stage (blue, labelled <em>Nominal</em> on screen), RoM&nbsp;(hum) (red) and RoM-Nav (green), released from a shared initial condition and followed by the same camera. Single-Stage loses the route; the raw RoM transfer fails on the stairs; only RoM-Nav reaches the goal. The divergence is a stair problem, not a walking problem — which is what the paired contrast below isolates.</figcaption>
+  </figure>
+
+  <div class="tbl wrap">
+    <table>
+      <caption><b>Table III.</b> Success rate paired contrasts by same-level vs. cross-level goals. Positive favors RoM-Nav; <sup>&dagger;</sup> marks a 95&nbsp;% confidence interval excluding zero.</caption>
+      <thead>
+        <tr><th scope="col"></th><th scope="col" class="grp" colspan="2">45 s</th><th scope="col" class="grp" colspan="2">120 s</th></tr>
+        <tr><th scope="col">Contrast (%)</th><th scope="col">same</th><th scope="col">cross</th><th scope="col">same</th><th scope="col">cross</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>RoM-Nav &minus; RoM (hum)</td><td>+1.5</td><td>+15.2<sup>&dagger;</sup></td><td>+0.6</td><td>+9.1<sup>&dagger;</sup></td></tr>
+        <tr><td>RoM-Nav &minus; Single-Stage</td><td>+6.8<sup>&dagger;</sup></td><td>+34.6<sup>&dagger;</sup></td><td>+3.0<sup>&dagger;</sup></td><td>+19.7<sup>&dagger;</sup></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="wrap prose">
+    <p>RoM-Nav makes all of its progress back on the cross-level trials, where stairs or ramps must be traversed to change <span class="katex-inline">\(z\)</span> level. The improvement comes primarily from fewer falls: on the 120&nbsp;s cross-level trials, timeout rates are 4.9&nbsp;% for RoM&nbsp;(hum) against 3.7&nbsp;% for RoM-Nav, but the fall rate drops from 16.3&nbsp;% to 8.3&nbsp;%.</p>
+  </div>
+
+  <h3 class="sub"><span class="lt">B.</span>Pretrained encoders</h3>
+  <div class="wrap prose">
+    <p>Three variants isolate the encoder choice. <strong>No pretraining</strong> randomly initializes the CNN and trains it with PPO. <strong>Unfrozen @ 1000</strong> takes the pretrained weights and unfreezes them after 1000 iterations. <strong>Frozen</strong> is the deployed configuration. Without pretraining, success is dramatically reduced; frozen and unfrozen reach equivalent performance, and training the CNN weights costs 15&nbsp;% more per iteration.</p>
+  </div>
+
+  <figure class="wrap plain" style="max-width:38rem">
+    <img src="media/figures/encoder.svg" alt="Success rate against training iteration for three LiDAR encoder pretraining variants, mean over five seeds with min-max shading." loading="lazy">
+    <figcaption><b>Fig. 4.</b> An evaluation of the LiDAR encoder pretraining. Success rate vs. training iteration is plotted for three pretraining variations; mean over five random seeds, min-max shaded.</figcaption>
+  </figure>
+
+  <h3 class="sub"><span class="lt">C.</span>Spawn and goal sampling</h3>
+  <div class="wrap prose">
+    <p>We ablate the two devices that shape the training distribution: <strong>Uniform</strong> drops the stair oversampling, <strong>NoCap</strong> replaces the geodesic goal cap with a Euclidean one, and <strong>UniformNoCap</strong> drops both.</p>
+  </div>
+
+  <div class="tbl wrap">
+    <table>
+      <caption><b>Table IV.</b> Spawn/goal-distribution ablation on the RoM. Metrics identical to Table II. <b>Bold</b> marks the best arm per column (T2G excluded, as this metric skews when only short episodes are completed).</caption>
+      <thead>
+        <tr><th scope="col">Arm</th><th scope="col">SR@45 (%)</th><th scope="col">SR@120 (%)</th><th scope="col">T2G (s)</th><th scope="col">SPL</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>RoM</td><td class="best">84.1</td><td class="best">93.6</td><td>25.6</td><td class="best">0.776</td></tr>
+        <tr><td>Uniform</td><td>70.9</td><td>77.4</td><td>23.3</td><td>0.640</td></tr>
+        <tr><td>NoCap</td><td>69.8</td><td>75.8</td><td>22.9</td><td>0.624</td></tr>
+        <tr><td>UniformNoCap</td><td>65.7</td><td>75.1</td><td>24.9</td><td>0.601</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="tbl wrap">
+    <table>
+      <caption><b>Table V.</b> Spawn/goal pair success rate by same-level vs. cross-level goals. Positive favors RoM; <sup>&dagger;</sup> marks a 95&nbsp;% confidence interval excluding zero.</caption>
+      <thead>
+        <tr><th scope="col"></th><th scope="col" class="grp" colspan="2">45 s</th><th scope="col" class="grp" colspan="2">120 s</th></tr>
+        <tr><th scope="col">Contrast (%)</th><th scope="col">same</th><th scope="col">cross</th><th scope="col">same</th><th scope="col">cross</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>RoM &minus; Uniform</td><td>+0.0</td><td>+27.8<sup>&dagger;</sup></td><td>+0.6</td><td>+33.5<sup>&dagger;</sup></td></tr>
+        <tr><td>RoM &minus; NoCap</td><td>&minus;0.6</td><td>+30.7<sup>&dagger;</sup></td><td>&minus;0.2</td><td>+37.7<sup>&dagger;</sup></td></tr>
+        <tr><td>RoM &minus; UniformNoCap</td><td>+1.0</td><td>+37.7<sup>&dagger;</sup></td><td>+0.0</td><td>+39.0<sup>&dagger;</sup></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="wrap prose">
+    <p>Removing either device costs significantly and by approximately the same amount, and removing both costs more. The entire loss falls on cross-level goals — the same-level columns are flat to within a point. Both sampling procedures are what make cross-floor navigation learnable.</p>
+  </div>
+</section>
+
+<!-- ===================================================== IV. safety -->
+<section id="safety">
+  <div class="sec-head wrap"><span class="sec-num">IV</span><h2>Safety under Out-of-Distribution Obstacles</h2></div>
+
+  <div class="wrap prose">
+    <p>A learned navigation policy carries no collision guarantee. We layer a Poisson safety filter on its output: the point cloud is rasterized into a 0.05&nbsp;m occupancy grid with the ground removed, convolved with the robot's radius, and Poisson's equation is solved over the grid to synthesize a control barrier function <span class="katex-inline">\(h\)</span> directly from raw occupancy — with no learned value function, disturbance model or obstacle detector. A closed-form QP then projects the policy's command onto the safe set:</p>
+    <div class="eq">$$v_{\mathrm{safe}} = \arg\inf_{v}\ \lVert v - v_{\mathrm{des}}\rVert^{2} \quad \text{s.t.} \quad \left.\frac{dh}{dp}\right|_{p} v \ \geq\ -\alpha h(p),$$</div>
+    <p>with <span class="katex-inline">\(\alpha = 0.75\)</span>. To test it, we built three hardware environments and flew ten shared spawn/goal pairs through each, with the filter both on and off. The room is mapped with GLIM and the robot continuously relocalized, purely to align initial conditions — <em>the map is never available to the policy, which remains strictly mapless.</em></p>
+  </div>
+
+  <div class="picker wrap" role="tablist" aria-label="Obstacle environment">
+    <button role="tab" aria-selected="true"  data-clip="cbf-indistribution">In-distribution</button>
+    <button role="tab" aria-selected="false" data-clip="cbf-ood"           >Out-of-distribution</button>
+    <button role="tab" aria-selected="false" data-clip="cbf-adversarial"   >Adversarial</button>
+    <span class="hint">filter off (left) &nbsp;|&nbsp; filter on (right)</span>
+  </div>
+
+  <figure class="wrap" style="margin-top:0" id="cbf-figure">
+    <video id="cbf-video" src="media/video/cbf-indistribution.mp4" poster="media/poster/cbf-indistribution.webp"
+           controls muted loop playsinline preload="none"
+           aria-label="Poisson safety filter off and on, side by side"></video>
+    <figcaption id="cbf-caption"><b>In-distribution.</b> Solid, convex obstacles of the kind the policy trained against. Neither arm collides.</figcaption>
+  </figure>
+
+  <div class="tbl wrap">
+    <table>
+      <caption><b>Table VI.</b> Hardware CBF comparison in three environments. Initial conditions and goals are shared across arms and environments.</caption>
+      <thead>
+        <tr><th scope="col">Obstacle Type</th><th scope="col">Arm</th><th scope="col">Success</th><th scope="col">Collision(s)</th><th scope="col">Time to goal (s)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>In-Distribution</td><td>no CBF</td><td>10/10</td><td>0/10</td><td>5.9 &plusmn; 1.5</td></tr>
+        <tr><td></td><td>CBF</td><td>10/10</td><td>0/10</td><td>6.7 &plusmn; 2.1</td></tr>
+        <tr class="gap"><td>Out-of-Distribution</td><td>no CBF</td><td>10/10</td><td>2/10</td><td>7.5 &plusmn; 1.7</td></tr>
+        <tr><td></td><td>CBF</td><td>10/10</td><td class="best">0/10</td><td>11.0 &plusmn; 5.8</td></tr>
+        <tr class="gap"><td>Adversarial</td><td>no CBF</td><td>10/10</td><td>4/10</td><td>5.5 &plusmn; 1.0</td></tr>
+        <tr><td></td><td>CBF</td><td>10/10</td><td class="best">0/10</td><td>6.9 &plusmn; 1.7</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="wrap prose">
+    <p>On in-distribution obstacles neither arm collides. On out-of-distribution geometry the unfiltered policy collides twice, and on the adversarial hanging tubes four times; the filter collides on neither. It pays for this in time to goal, which rises in both out-of-distribution environments. Success rate never drops.</p>
+  </div>
+
+  <figure class="wrap plain">
+    <img src="media/figures/cbf.webp" width="1600" alt="Trajectory plots for the three obstacle environments, with collisions marked." loading="lazy">
+    <figcaption><b>Fig. 5.</b> Investigation on performance with OOD obstacles. Four of ten trials are plotted (collisions marked with &times;). (Left) Environment with in-distribution obstacles. (Middle) Environment with OOD obstacles. (Right) Environment with obstacles chosen adversarially, hanging with small LiDAR cross-section.</figcaption>
+  </figure>
+</section>
+
+<!-- ===================================================== V. hardware -->
+<section id="hardware">
+  <div class="sec-head wrap"><span class="sec-num">V</span><h2>Hardware Deployment</h2></div>
+
+  <div class="wrap prose">
+    <p>We deploy RoM-Nav on a Unitree G1 for mapless, long-horizon navigation in real buildings and outdoors. The trials include vertical climbs of up to 10&nbsp;m — beyond the training distribution extreme of 8&nbsp;m — and path lengths of up to 100&nbsp;m, well beyond the 30&nbsp;m training cap. <strong>None of the hardware trials included a collision.</strong></p>
+    <p class="note">Each composite below shows the third-person view alongside the registered LiDAR map with the walked route, the live LiDAR return, and the robot's own depth camera. Figures quoted are measured from each run's recorded bag.</p>
+  </div>
+
+  <div class="picker wrap" role="tablist" aria-label="Hardware trial">
+    <button role="tab" aria-selected="true"  data-trial="trial-lab">Cluttered lab</button>
+    <button role="tab" aria-selected="false" data-trial="trial-gt">Two-storey stairwell</button>
+    <button role="tab" aria-selected="false" data-trial="trial-ann">Building entry climb</button>
+    <button role="tab" aria-selected="false" data-trial="trial-gtback">Long-horizon outdoor</button>
+  </div>
+
+  <figure class="wrap" style="margin-top:0">
+    <video id="trial-video" src="media/video/trial-lab.mp4" poster="media/poster/trial-lab.webp"
+           controls muted playsinline preload="none"
+           aria-label="Hardware deployment composite"></video>
+    <figcaption id="trial-caption"><b>Cluttered lab.</b> 36.6&nbsp;m of path over 63&nbsp;s, threading mats, crates and equipment on a single level. Stops 0.03&nbsp;m from the commanded goal.</figcaption>
+  </figure>
+
+  <figure class="wrap plain">
+    <img src="media/figures/hardware.webp" width="1600" alt="Four hardware deployments plotted as registered maps with the walked route." loading="lazy">
+    <figcaption><b>Fig. 6.</b> Four example deployments in complex, real-world environments. (Top Left) Navigation of a cluttered lab environment, 38&nbsp;m path length. (Top Right) 2-Story climb (7&nbsp;m ascent) on a wire-railed stairwell, 51&nbsp;m path length. (Bottom Left) 2-Story climb (10&nbsp;m ascent) to enter a building from the outside, 51&nbsp;m path length. (Bottom Right) A long-horizon outdoor navigation task, avoiding tables, cliff edges and railings, 100&nbsp;m path length (1&nbsp;m descent). <em>Panels are plotted from separate recorded runs; the videos above are their own takes.</em></figcaption>
+  </figure>
+
+  <h3 class="sub">Limitations</h3>
+  <div class="wrap prose">
+    <p>LiDAR is not a sufficient sensor for transparent obstacles: a cardboard sheet was used to block a glass door and window in one trial, which the robot might otherwise have tried to traverse. Beyond those specific instances, no intentional environmental modifications were required. The method also assumes an accurate goal expressed in the body frame, which is a strong assumption. Finally, the planar CBF could in principle block routes the policy deems traversable, though this was not observed experimentally.</p>
+  </div>
+</section>
+
+<!-- ===================================================== VI. video -->
+<section id="video">
+  <div class="sec-head wrap"><span class="sec-num">VI</span><h2>Supplementary Video</h2></div>
+  <div class="wrap prose">
+    <p>The full supplementary video covers the architecture, both training stages, the policy comparison in simulation, the safety filter, and all four hardware deployments at length.</p>
+  </div>
+
+  <!-- TODO(youtube): set data-yt to the video id once uploaded. -->
+  <div class="facade" id="yt-facade" data-yt="REPLACE_WITH_YOUTUBE_ID" role="button" tabindex="0" aria-label="Play the supplementary video">
+    <img src="media/figures/video-poster.webp" width="1280" height="720" alt="Supplementary video title frame" loading="lazy">
+    <span class="play"><span>Play &middot; 7:36</span></span>
+  </div>
+</section>
+
+<!-- ===================================================== citation -->
+<section id="citation">
+  <div class="sec-head wrap"><span class="sec-num">&mdash;</span><h2>Citation</h2></div>
+  <div class="cite wrap">
+    <div class="bar"><span>BibTeX</span><button id="copy-bib" type="button">copy</button></div>
+<pre id="bibtex">@inproceedings{romnav2027,
+  title     = {Learning Safe Humanoid Navigation from Reduced Order Models},
+  author    = {TODO},
+  booktitle = {IEEE International Conference on Robotics and Automation (ICRA)},
+  year      = {2027},
+  note      = {Under review}
+}</pre>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Affiliations and funding acknowledgement to be added.</p>
+    <p>Page built from the trial bags and simulation recordings behind the paper; all reported figures are measured, not estimated.</p>
+  </div>
+</footer>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous"></script>
+<script defer src="js/site.js"></script>
+</body>
+</html>
