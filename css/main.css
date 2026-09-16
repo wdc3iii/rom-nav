@@ -20,11 +20,13 @@
   --sans:  "Source Sans 3", system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
   --mono:  ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 
-  /* One column. Prose, figures, video and tables all sit on the same measure so
-     nothing steps outside the text block. 46rem less the 1.5rem gutters leaves a
-     43rem content box, which at 1.125rem body type is a ~80-character line. */
-  --measure: 46rem;
-  --wide:    46rem;
+  /* One column at the original media width. Prose, figures, video and tables all
+     sit on it, so nothing steps outside anything else. 68rem less the 1.5rem
+     gutters is a 1040 px content box; at 1.25rem that is a long line (~116
+     characters), carried by generous leading. Narrow --measure alone to trade
+     width for measure -- but then text and media stop matching again. */
+  --measure: 68rem;
+  --wide:    68rem;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -60,8 +62,8 @@ body {
   background: var(--paper);
   color: var(--ink);
   font-family: var(--serif);
-  font-size: 1.125rem;
-  line-height: 1.7;
+  font-size: 1.25rem;
+  line-height: 1.75;
   font-kerning: normal;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -98,7 +100,7 @@ section { padding: 5.5rem 0 0.5rem; }
 
 .authors {
   font-family: var(--sans);
-  font-size: 1.0625rem;
+  font-size: 1.3125rem;
   margin: 0 auto 0.65rem;
   max-width: 44rem;
   line-height: 1.9;
@@ -107,7 +109,7 @@ section { padding: 5.5rem 0 0.5rem; }
 
 .affil {
   font-family: var(--sans);
-  font-size: 0.875rem;
+  font-size: 1.3125rem;
   color: var(--muted);
   margin: 0 auto 1.35rem;
   max-width: 44rem;
@@ -116,7 +118,7 @@ section { padding: 5.5rem 0 0.5rem; }
 
 .venue {
   font-family: var(--sans);
-  font-size: 0.875rem;
+  font-size: 1.3125rem;
   letter-spacing: 0.055em;
   text-transform: uppercase;
   color: var(--muted);
@@ -126,7 +128,7 @@ section { padding: 5.5rem 0 0.5rem; }
 .links { display: flex; gap: 0.6rem; justify-content: center; flex-wrap: wrap; }
 .links a {
   font-family: var(--sans);
-  font-size: 0.9375rem;
+  font-size: 1.3125rem;
   padding: 0.42rem 1.4rem;
   border: 1px solid var(--rule);
   border-radius: 2px;
@@ -153,7 +155,7 @@ section { padding: 5.5rem 0 0.5rem; }
 }
 .nav a {
   font-family: var(--sans);
-  font-size: 0.8125rem;
+  font-size: 1.3125rem;
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--muted);
@@ -174,7 +176,7 @@ section { padding: 5.5rem 0 0.5rem; }
 .sec-num {
   display: block;
   font-family: var(--sans);
-  font-size: 0.75rem;
+  font-size: 1.3125rem;
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -187,7 +189,7 @@ h3.sub {
   max-width: var(--measure);
   margin: 3.5rem auto 1.1rem;
   font-family: var(--sans);
-  font-size: 1rem;
+  font-size: 1.3125rem;
   font-weight: 600;
   letter-spacing: 0.005em;
 }
@@ -201,7 +203,7 @@ figure.plain img { border: none; background: none; }
 
 figcaption {
   font-family: var(--sans);
-  font-size: 0.8125rem;
+  font-size: 1.3125rem;
   line-height: 1.6;
   color: var(--muted);
   margin-top: 0.8rem;
@@ -230,7 +232,7 @@ figcaption a:hover { color: var(--accent); border-bottom-color: currentColor; }
 }
 .picker button {
   font-family: var(--sans);
-  font-size: 0.875rem;
+  font-size: 1.3125rem;
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
@@ -251,7 +253,7 @@ figcaption a:hover { color: var(--accent); border-bottom-color: currentColor; }
   width: 100%;
   border-collapse: collapse;
   font-family: var(--sans);
-  font-size: 0.875rem;
+  font-size: 1.3125rem;
   font-variant-numeric: tabular-nums;
   border-top: 1.5px solid var(--ink);
   border-bottom: 1.5px solid var(--ink);
@@ -260,7 +262,7 @@ figcaption a:hover { color: var(--accent); border-bottom-color: currentColor; }
   caption-side: top;
   text-align: left;
   font-family: var(--sans);
-  font-size: 0.8125rem;
+  font-size: 1.3125rem;
   line-height: 1.6;
   color: var(--muted);
   margin-bottom: 0.7rem;
@@ -279,7 +281,7 @@ figcaption a:hover { color: var(--accent); border-bottom-color: currentColor; }
 .tbl tbody td.na { color: var(--muted); }
 .tbl .tnote {
   font-family: var(--sans);
-  font-size: 0.75rem;
+  font-size: 1.3125rem;
   color: var(--muted);
   margin-top: 0.6rem;
   line-height: 1.6;
@@ -340,6 +342,6 @@ footer p { max-width: var(--measure); margin: 0 auto 0.8rem; }
 
 /* -------------------------------------------------------------- misc */
 
-.lead { font-size: 1.1875rem; }
+.lead { font-size: 1.06em; }
 .note { color: var(--muted); font-size: 0.9375rem; }
 .nowrap { white-space: nowrap; }
