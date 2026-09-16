@@ -84,7 +84,7 @@
 
   <figure class="wrap plain">
     <img src="media/figures/architecture.webp" width="1600" alt="RoM-Nav architecture: LiDAR and depth encoders feed self- and cross-attention, then a GRU and an MLP head; below, a RoM policy kickstarts the humanoid policy." loading="lazy">
-    <figcaption><b>Fig. 2.</b> RoM-Nav architecture. LiDAR and Depth inputs are processed via a pretrained CNN encoder. LiDAR passes through self- then cross-attention. The resulting embeddings are processed by a GRU unit and mapped to actions via an MLP head. A RoM policy is trained first, which is then used to kickstart the RoM-Nav policy by balancing KL divergence with a PPO objective on the humanoid with frozen locomotion controller.</figcaption>
+    <figcaption><b>Fig. 2.</b> RoM-Nav architecture. LiDAR and Depth inputs are processed via a pretrained CNN encoder. LiDAR passes through self- then cross-attention. The resulting embeddings are processed by a GRU unit and mapped to actions via an MLP head. A RoM policy is trained first, which is then used to kickstart the RoM-Nav policy by balancing KL divergence with a PPO objective on the humanoid with frozen locomotion controller. <a href="media/figures/architecture.webp">Enlarge</a>.</figcaption>
   </figure>
 
   <h3 class="sub"><span class="lt">A.</span>Kickstarting from a reduced order model</h3>
@@ -125,7 +125,7 @@
 
   <figure class="wrap plain">
     <img src="media/figures/envs.webp" width="1600" alt="Procedurally generated tiles and their occupancy grids: a multi-story building and a multi-level outdoor environment." loading="lazy">
-    <figcaption><b>Fig. 3.</b> Environment tiles. (a) multi-story building and (b) its occupancy grid. (c) multi-level outdoor environment and (d) its occupancy grid.</figcaption>
+    <figcaption><b>Fig. 3.</b> Environment tiles. (a) multi-story building and (b) its occupancy grid. (c) multi-level outdoor environment and (d) its occupancy grid. <a href="media/figures/envs.webp">Enlarge</a>.</figcaption>
   </figure>
 </section>
 
@@ -187,7 +187,7 @@
     <p>Three variants isolate the encoder choice. <strong>No pretraining</strong> randomly initializes the CNN and trains it with PPO. <strong>Unfrozen @ 1000</strong> takes the pretrained weights and unfreezes them after 1000 iterations. <strong>Frozen</strong> is the deployed configuration. Without pretraining, success is dramatically reduced; frozen and unfrozen reach equivalent performance, and training the CNN weights costs 15&nbsp;% more per iteration.</p>
   </div>
 
-  <figure class="wrap plain" style="max-width:38rem">
+  <figure class="wrap plain">
     <img src="media/figures/encoder.svg" alt="Success rate against training iteration for three LiDAR encoder pretraining variants, mean over five seeds with min-max shading." loading="lazy">
     <figcaption><b>Fig. 4.</b> An evaluation of the LiDAR encoder pretraining. Success rate vs. training iteration is plotted for three pretraining variations; mean over five random seeds, min-max shaded.</figcaption>
   </figure>
@@ -279,7 +279,7 @@
 
   <figure class="wrap plain">
     <img src="media/figures/cbf.webp" width="1600" alt="Trajectory plots for the three obstacle environments, with collisions marked." loading="lazy">
-    <figcaption><b>Fig. 5.</b> Investigation on performance with OOD obstacles. Four of ten trials are plotted (collisions marked with &times;). (Left) Environment with in-distribution obstacles. (Middle) Environment with OOD obstacles. (Right) Environment with obstacles chosen adversarially, hanging with small LiDAR cross-section.</figcaption>
+    <figcaption><b>Fig. 5.</b> Investigation on performance with OOD obstacles. Four of ten trials are plotted (collisions marked with &times;). (Left) Environment with in-distribution obstacles. (Middle) Environment with OOD obstacles. (Right) Environment with obstacles chosen adversarially, hanging with small LiDAR cross-section. <a href="media/figures/cbf.webp">Enlarge</a>.</figcaption>
   </figure>
 </section>
 
@@ -308,7 +308,7 @@
 
   <figure class="wrap plain">
     <img src="media/figures/hardware.webp" width="1600" alt="Four hardware deployments plotted as registered maps with the walked route." loading="lazy">
-    <figcaption><b>Fig. 6.</b> Four example deployments in complex, real-world environments. (Top Left) Navigation of a cluttered lab environment, 38&nbsp;m path length. (Top Right) 2-Story climb (7&nbsp;m ascent) on a wire-railed stairwell, 51&nbsp;m path length. (Bottom Left) 2-Story climb (10&nbsp;m ascent) to enter a building from the outside, 51&nbsp;m path length. (Bottom Right) A long-horizon outdoor navigation task, avoiding tables, cliff edges and railings, 100&nbsp;m path length (1&nbsp;m descent). <em>Panels are plotted from separate recorded runs; the videos above are their own takes.</em></figcaption>
+    <figcaption><b>Fig. 6.</b> Four example deployments in complex, real-world environments. (Top Left) Navigation of a cluttered lab environment, 38&nbsp;m path length. (Top Right) 2-Story climb (7&nbsp;m ascent) on a wire-railed stairwell, 51&nbsp;m path length. (Bottom Left) 2-Story climb (10&nbsp;m ascent) to enter a building from the outside, 51&nbsp;m path length. (Bottom Right) A long-horizon outdoor navigation task, avoiding tables, cliff edges and railings, 100&nbsp;m path length (1&nbsp;m descent). <em>Panels are plotted from separate recorded runs; the videos above are their own takes.</em> <a href="media/figures/hardware.webp">Enlarge</a>.</figcaption>
   </figure>
 
   <h3 class="sub">Limitations</h3>
@@ -336,12 +336,13 @@
   <div class="sec-head wrap"><span class="sec-num">&mdash;</span><h2>Citation</h2></div>
   <div class="cite wrap">
     <div class="bar"><span>BibTeX</span><button id="copy-bib" type="button">copy</button></div>
-<pre id="bibtex">@inproceedings{romnav2027,
-  title     = {Learning Safe Humanoid Navigation from Reduced Order Models},
-  author    = {TODO},
-  booktitle = {IEEE International Conference on Robotics and Automation (ICRA)},
-  year      = {2027},
-  note      = {Under review}
+<pre id="bibtex">@misc{romnav2026,
+  title         = {Learning Safe Humanoid Navigation from Reduced Order Models},
+  author        = {TODO},
+  year          = {2026},
+  eprint        = {TODO},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.RO}
 }</pre>
   </div>
 </section>

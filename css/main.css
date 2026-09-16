@@ -20,8 +20,11 @@
   --sans:  "Source Sans 3", system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
   --mono:  ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 
-  --measure: 42rem;   /* prose column  */
-  --wide:    68rem;   /* media + tables */
+  /* One column. Prose, figures, video and tables all sit on the same measure so
+     nothing steps outside the text block. 46rem less the 1.5rem gutters leaves a
+     43rem content box, which at 1.125rem body type is a ~80-character line. */
+  --measure: 46rem;
+  --wide:    46rem;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -57,8 +60,8 @@ body {
   background: var(--paper);
   color: var(--ink);
   font-family: var(--serif);
-  font-size: 1.0625rem;
-  line-height: 1.66;
+  font-size: 1.125rem;
+  line-height: 1.7;
   font-kerning: normal;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -79,7 +82,7 @@ sup { font-size: 0.72em; line-height: 0; vertical-align: super; }
 .wrap  { max-width: var(--wide); margin: 0 auto; padding: 0 1.5rem; }
 .prose { max-width: var(--measure); margin-left: auto; margin-right: auto; }
 
-section { padding: 3.25rem 0 0.5rem; }
+section { padding: 5.5rem 0 0.5rem; }
 
 /* -------------------------------------------------------------- masthead */
 
@@ -164,8 +167,8 @@ section { padding: 3.25rem 0 0.5rem; }
 
 .sec-head {
   max-width: var(--measure);
-  margin: 0 auto 1.5rem;
-  padding-bottom: 0.55rem;
+  margin: 0 auto 2.25rem;
+  padding-bottom: 0.6rem;
   border-bottom: 1px solid var(--rule);
 }
 .sec-num {
@@ -182,7 +185,7 @@ section { padding: 3.25rem 0 0.5rem; }
 
 h3.sub {
   max-width: var(--measure);
-  margin: 2.5rem auto 0.9rem;
+  margin: 3.5rem auto 1.1rem;
   font-family: var(--sans);
   font-size: 1rem;
   font-weight: 600;
@@ -192,7 +195,7 @@ h3.sub .lt { color: var(--muted); font-weight: 400; margin-right: 0.5em; }
 
 /* -------------------------------------------------------------- figures */
 
-figure { margin: 2.25rem auto; max-width: var(--wide); }
+figure { margin: 3.5rem auto; max-width: var(--wide); }
 figure img, figure video { display: block; width: 100%; height: auto; border: 1px solid var(--hair); border-radius: 2px; background: var(--hair); }
 figure.plain img { border: none; background: none; }
 
@@ -201,15 +204,16 @@ figcaption {
   font-size: 0.8125rem;
   line-height: 1.6;
   color: var(--muted);
-  margin-top: 0.7rem;
-  max-width: 54rem;
+  margin-top: 0.8rem;
 }
 figcaption b { color: var(--ink); font-weight: 600; font-variant: small-caps; letter-spacing: 0.03em; }
+figcaption a { color: var(--muted); border-bottom-color: var(--rule); }
+figcaption a:hover { color: var(--accent); border-bottom-color: currentColor; }
 
 .hero-fig { margin: 0 auto 0; }
 .hero-fig video { border: 1px solid var(--hair); }
 
-.duo { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; }
+.duo { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
 .duo figcaption { margin-top: 0.55rem; }
 @media (max-width: 40rem) { .duo { grid-template-columns: 1fr; } }
 
@@ -220,7 +224,7 @@ figcaption b { color: var(--ink); font-weight: 600; font-variant: small-caps; le
 
 .picker {
   display: flex; gap: 1.6rem; flex-wrap: wrap;
-  max-width: var(--wide); margin: 0 auto 1.15rem;
+  max-width: var(--wide); margin: 0 auto 1.4rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--hair);
 }
@@ -242,7 +246,7 @@ figcaption b { color: var(--ink); font-weight: 600; font-variant: small-caps; le
 
 /* -------------------------------------------------------------- tables */
 
-.tbl { max-width: var(--wide); margin: 2.25rem auto; overflow-x: auto; }
+.tbl { max-width: var(--wide); margin: 3.5rem auto; overflow-x: auto; }
 .tbl table {
   width: 100%;
   border-collapse: collapse;
@@ -260,7 +264,7 @@ figcaption b { color: var(--ink); font-weight: 600; font-variant: small-caps; le
   line-height: 1.6;
   color: var(--muted);
   margin-bottom: 0.7rem;
-  width: min(54rem, calc(100vw - 3rem));
+  width: min(var(--measure), calc(100vw - 3rem));
 }
 .tbl caption b { color: var(--ink); font-weight: 600; font-variant: small-caps; letter-spacing: 0.03em; }
 .tbl th, .tbl td { padding: 0.44rem 0.8rem; text-align: right; white-space: nowrap; }
@@ -278,7 +282,7 @@ figcaption b { color: var(--ink); font-weight: 600; font-variant: small-caps; le
   color: var(--muted);
   margin-top: 0.6rem;
   line-height: 1.6;
-  width: min(54rem, calc(100vw - 3rem));
+  width: min(var(--measure), calc(100vw - 3rem));
 }
 
 /* -------------------------------------------------------------- math */
@@ -289,7 +293,7 @@ figcaption b { color: var(--ink); font-weight: 600; font-variant: small-caps; le
 /* -------------------------------------------------------------- video facade */
 
 .facade {
-  position: relative; display: block; max-width: var(--wide); margin: 2rem auto 0;
+  position: relative; display: block; max-width: var(--wide); margin: 3rem auto 0;
   border: 1px solid var(--hair); border-radius: 2px; overflow: hidden; cursor: pointer;
   background: var(--hair);
 }
@@ -327,7 +331,7 @@ figcaption b { color: var(--ink); font-weight: 600; font-variant: small-caps; le
 /* -------------------------------------------------------------- footer */
 
 footer {
-  margin-top: 4.5rem; padding: 2.25rem 0 3.5rem;
+  margin-top: 6rem; padding: 2.5rem 0 4rem;
   border-top: 1px solid var(--rule);
   font-family: var(--sans); font-size: 0.8125rem; color: var(--muted);
 }
@@ -335,6 +339,6 @@ footer p { max-width: var(--measure); margin: 0 auto 0.8rem; }
 
 /* -------------------------------------------------------------- misc */
 
-.lead { font-size: 1.125rem; }
+.lead { font-size: 1.1875rem; }
 .note { color: var(--muted); font-size: 0.9375rem; }
 .nowrap { white-space: nowrap; }
