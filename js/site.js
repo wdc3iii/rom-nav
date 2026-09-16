@@ -65,7 +65,7 @@
     "trial-lab":
       "<b>Cluttered lab.</b> 36.6&nbsp;m of path over 63&nbsp;s, threading mats, crates and equipment on a single level. Stops 0.03&nbsp;m from the commanded goal.",
     "trial-gt":
-      "<b>Two-storey stairwell.</b> 47.6&nbsp;m of path and +7.9&nbsp;m of climb in 72&nbsp;s, up a stairwell with thin wire railings — close to invisible to LiDAR. Stops 0.10&nbsp;m from the goal.",
+      "<b>Two-story stairwell.</b> 47.6&nbsp;m of path and +7.9&nbsp;m of climb in 72&nbsp;s, up a stairwell with thin wire railings — close to invisible to LiDAR. Stops 0.10&nbsp;m from the goal.",
     "trial-ann":
       "<b>Building entry climb.</b> 51.4&nbsp;m of path and +8.9&nbsp;m of climb in 78&nbsp;s, entering a building from outside and continuing up through it. Stops 0.06&nbsp;m from the goal.",
     "trial-gtback":
