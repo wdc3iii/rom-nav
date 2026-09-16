@@ -100,7 +100,7 @@ section { padding: 5.5rem 0 0.5rem; }
 
 .authors {
   font-family: var(--sans);
-  font-size: 1.3125rem;
+  font-size: 1.1875rem;
   margin: 0 auto 0.65rem;
   max-width: 44rem;
   line-height: 1.9;
@@ -109,16 +109,16 @@ section { padding: 5.5rem 0 0.5rem; }
 
 .affil {
   font-family: var(--sans);
-  font-size: 1.3125rem;
+  font-size: 0.9375rem;
   color: var(--muted);
   margin: 0 auto 1.35rem;
-  max-width: 44rem;
+  max-width: 54rem;
   line-height: 1.7;
 }
 
 .venue {
   font-family: var(--sans);
-  font-size: 1.3125rem;
+  font-size: 0.9375rem;
   letter-spacing: 0.055em;
   text-transform: uppercase;
   color: var(--muted);
@@ -128,7 +128,7 @@ section { padding: 5.5rem 0 0.5rem; }
 .links { display: flex; gap: 0.6rem; justify-content: center; flex-wrap: wrap; }
 .links a {
   font-family: var(--sans);
-  font-size: 1.3125rem;
+  font-size: 1.0625rem;
   padding: 0.42rem 1.4rem;
   border: 1px solid var(--rule);
   border-radius: 2px;
@@ -155,7 +155,7 @@ section { padding: 5.5rem 0 0.5rem; }
 }
 .nav a {
   font-family: var(--sans);
-  font-size: 1.3125rem;
+  font-size: 0.875rem;
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--muted);
@@ -176,7 +176,7 @@ section { padding: 5.5rem 0 0.5rem; }
 .sec-num {
   display: block;
   font-family: var(--sans);
-  font-size: 1.3125rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -189,7 +189,7 @@ h3.sub {
   max-width: var(--measure);
   margin: 3.5rem auto 1.1rem;
   font-family: var(--sans);
-  font-size: 1.3125rem;
+  font-size: 1.125rem;
   font-weight: 600;
   letter-spacing: 0.005em;
 }
@@ -203,7 +203,7 @@ figure.plain img { border: none; background: none; }
 
 figcaption {
   font-family: var(--sans);
-  font-size: 1.3125rem;
+  font-size: 0.875rem;
   line-height: 1.6;
   color: var(--muted);
   margin-top: 0.8rem;
@@ -232,7 +232,7 @@ figcaption a:hover { color: var(--accent); border-bottom-color: currentColor; }
 }
 .picker button {
   font-family: var(--sans);
-  font-size: 1.3125rem;
+  font-size: 0.9375rem;
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
@@ -253,7 +253,7 @@ figcaption a:hover { color: var(--accent); border-bottom-color: currentColor; }
   width: 100%;
   border-collapse: collapse;
   font-family: var(--sans);
-  font-size: 1.3125rem;
+  font-size: 0.9375rem;
   font-variant-numeric: tabular-nums;
   border-top: 1.5px solid var(--ink);
   border-bottom: 1.5px solid var(--ink);
@@ -262,7 +262,7 @@ figcaption a:hover { color: var(--accent); border-bottom-color: currentColor; }
   caption-side: top;
   text-align: left;
   font-family: var(--sans);
-  font-size: 1.3125rem;
+  font-size: 0.875rem;
   line-height: 1.6;
   color: var(--muted);
   margin-bottom: 0.7rem;
@@ -281,7 +281,7 @@ figcaption a:hover { color: var(--accent); border-bottom-color: currentColor; }
 .tbl tbody td.na { color: var(--muted); }
 .tbl .tnote {
   font-family: var(--sans);
-  font-size: 1.3125rem;
+  font-size: 0.8125rem;
   color: var(--muted);
   margin-top: 0.6rem;
   line-height: 1.6;
